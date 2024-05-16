@@ -1,5 +1,5 @@
 // Importar el modelo de usuario
-const User = require('../models/User');
+const User = require('../models/UserModel');
 
 // Controladores para las rutas de usuario
 const userController = {
