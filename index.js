@@ -4,40 +4,38 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const User = require('./models/UserModel');
+const userRoutes = require('./routes/userRoutes');
+const tweetRoutes = require('./routes/tweetRoutes');
+const authMiddleware = require('./middlewares/authMiddleware');
+const errorHandler = require('./middlewares/errorHandler');
 
 // Crear una instancia de la aplicación Express
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/TweetScapeDB')
-
-app.get("/users", (req,res) => {
-  User.find({}).then(function(users) {
-    res.json(users)
-  }).catch(function(err){
-    console.log(err)
-  })
+// Conectar a la base de datos MongoDB
+mongoose.connect('mongodb://localhost:27017/TweetScapeDB', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
-
-
-// Puerto en el que se ejecutará el servidor
-const PORT = 
-
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error(err));
 
 // Middleware
 app.use(bodyParser.json()); // Middleware para parsear JSON en las solicitudes
 app.use(cors()); // Middleware para habilitar CORS
 
 // Rutas
-app.use('/tweets', require('./routes/tweetRoutes')); // Rutas relacionadas con los tweets
+app.use('/api/users', userRoutes); // Rutas relacionadas con los usuarios
+app.use('/api/tweets', authMiddleware, tweetRoutes); // Rutas protegidas con autenticación para tweets
 
-// Manejador de errores
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+
+// Middleware de manejo de errores
+app.use(errorHandler);
+
+// Puerto en el que se ejecutará el servidor
+const PORT = process.env.PORT || 3000;
+
+// Iniciar el servidor
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
