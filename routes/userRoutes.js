@@ -1,17 +1,10 @@
 const express = require('express');
 const router = express.Router();
-
-// Importar el controlador de usuarios
 const userController = require('../controllers/userController');
+const { protect } = require('../middleware/authMiddleware');
 
-// Rutas para usuarios
-router.post('/register', userController.register); // Ruta para registrar un nuevo usuario
-router.post('/login', userController.login); // Ruta para iniciar sesión de usuario
-app.get("/users", (req, res) => {
-    User.find({})
-      .then(users => res.json(users))
-      .catch(err => console.log(err));
-  });
-  
+router.post('/register', userController.register);
+router.post('/login', userController.login);
+router.post('/:id/follow', protect, userController.followUser);
 
 module.exports = router;

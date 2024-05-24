@@ -1,13 +1,11 @@
-// Importar el modelo de tweet
 const Tweet = require('../models/Tweet');
+const User = require('../models/UserModel');
 
 // Controladores para las rutas de tweets
 const tweetController = {
-  // Controlador para obtener todos los tweets
   getAllTweets: async (req, res) => {
     try {
-      // Aquí puedes implementar la lógica para obtener todos los tweets
-      const tweets = await Tweet.find();
+      const tweets = await Tweet.find().populate('author', 'username');
       res.status(200).json(tweets);
     } catch (error) {
       console.error(error);
@@ -15,36 +13,120 @@ const tweetController = {
     }
   },
 
-  // Controlador para crear un nuevo tweet
   createTweet: async (req, res) => {
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
+
+    const tweet = new Tweet({
+      content,
+      author: req.user._id,
+    });
+
     try {
-      // Aquí puedes implementar la lógica para crear un nuevo tweet
-      res.status(201).json({ message: 'Tweet creado exitosamente' });
+      const newTweet = await tweet.save();
+      res.status(201).json(newTweet);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Error al crear tweet' });
     }
   },
 
-  // Controlador para editar un tweet existente
   editTweet: async (req, res) => {
+    const { id } = req.params;
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
+
     try {
-      // Aquí puedes implementar la lógica para editar un tweet existente
-      res.status(200).json({ message: 'Tweet editado exitosamente' });
+      const tweet = await Tweet.findById(id);
+
+      if (!tweet) {
+        return res.status(404).json({ message: 'Tweet not found' });
+      }
+
+      if (tweet.author.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to update this tweet' });
+      }
+
+      tweet.content = content;
+      const updatedTweet = await tweet.save();
+      res.status(200).json(updatedTweet);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Error al editar tweet' });
     }
   },
 
-  // Controlador para eliminar un tweet
   deleteTweet: async (req, res) => {
+    const { id } = req.params;
+
     try {
-      // Aquí puedes implementar la lógica para eliminar un tweet
+      const tweet = await Tweet.findById(id);
+
+      if (!tweet) {
+        return res.status(404).json({ message: 'Tweet not found' });
+      }
+
+      if (tweet.author.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to delete this tweet' });
+      }
+
+      await tweet.remove();
       res.status(200).json({ message: 'Tweet eliminado exitosamente' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Error al eliminar tweet' });
+    }
+  },
+
+  likeTweet: async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const tweet = await Tweet.findById(id);
+
+      if (!tweet) {
+        return res.status(404).json({ message: 'Tweet not found' });
+      }
+
+      if (!tweet.likes.includes(req.user._id)) {
+        tweet.likes.push(req.user._id);
+        await tweet.save();
+      }
+
+      res.status(200).json(tweet);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al dar like al tweet' });
+    }
+  },
+
+  repostTweet: async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const tweet = await Tweet.findById(id);
+
+      if (!tweet) {
+        return res.status(404).json({ message: 'Tweet not found' });
+      }
+
+      const repost = new Tweet({
+        content: tweet.content,
+        author: req.user._id,
+        repostedFrom: tweet._id,
+      });
+
+      const newRepost = await repost.save();
+      res.status(201).json(newRepost);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al repostear tweet' });
     }
   }
 };
