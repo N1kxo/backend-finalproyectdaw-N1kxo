@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-
-// Importar el controlador de tweets
 const tweetController = require('../controllers/tweetController');
+const { protect } = require('../middleware/authMiddleware');
 
-// Rutas para tweets
-router.get('/', tweetController.getAllTweets); // Ruta para obtener todos los tweets
-router.post('/', tweetController.createTweet); // Ruta para crear un nuevo tweet
-router.put('/:id', tweetController.editTweet); // Ruta para editar un tweet existente
-router.delete('/:id', tweetController.deleteTweet); // Ruta para eliminar un tweet
+router.get('/', tweetController.getAllTweets);
+router.post('/', protect, tweetController.createTweet);
+router.put('/:id', protect, tweetController.editTweet);
+router.delete('/:id', protect, tweetController.deleteTweet);
+router.post('/:id/like', protect, tweetController.likeTweet);
+router.post('/:id/repost', protect, tweetController.repostTweet);
 
 module.exports = router;
