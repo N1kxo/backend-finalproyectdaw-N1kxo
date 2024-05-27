@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
 const tweetRoutes = require('./routes/tweetRoutes');
@@ -23,6 +22,11 @@ app.use(corsMiddleware);
 app.use('/tweets', tweetRoutes);
 app.use('/users', userRoutes);
 
+app.get('/', (req, res) => {
+  res.sendStatus(404); // o puedes usar res.json({ message: 'Not Found' });
+});
+
+// Middleware de manejo de errores
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
