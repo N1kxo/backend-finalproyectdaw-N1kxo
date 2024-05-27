@@ -1,24 +1,22 @@
 require('dotenv').config();
-
+const dbconnect = require("./config/config.js");
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const userRoutes = require('./routes/userRoutes');
-const tweetRoutes = require('./routes/tweetRoutes');
-const errorHandler = require('./middlewares/errorHandler');
-const corsMiddleware = require('./middlewares/corsMiddleware');
-
+const userRoutes = require('./routes/userRoutes.js');
+const tweetRoutes = require('./routes/tweetRoutes.js');
+const errorHandler = require('./middlewares/errorHandler.js');
+const corsMiddleware = require('./middlewares/corsMiddleware.js');
 const app = express();
 
-mongoose.connect(process.env.DB_CONNECTION_STRING, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('Conectado a la base de datos'))
-  .catch(err => console.error('Error al conectar a la base de datos:', err));
+// Conectar a la base de datos
+dbconnect();
 
+// Middleware
 app.use(bodyParser.json());
 app.use(corsMiddleware);
 
+// Rutas
 app.use('/tweets', tweetRoutes);
 app.use('/users', userRoutes);
 

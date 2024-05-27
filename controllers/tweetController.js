@@ -1,6 +1,6 @@
-const Tweet = require('../models/Tweet');
-const User = require('../models/UserModel');
-const Notification = require('../models/Notification');
+const Tweet = require('../models/TweetModel.js');
+const User = require('../models/UserModel.js');
+const Notification = require('../models/Notification.js');
 
 // Controladores para las rutas de tweets
 const tweetController = {
