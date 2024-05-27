@@ -21,7 +21,7 @@ app.use('/tweets', tweetRoutes);
 app.use('/users', userRoutes);
 
 app.get('/', (req, res) => {
-  res.sendStatus(404); // o puedes usar res.json({ message: 'Not Found' });
+  res.sendStatus(404); // o puedes usar res.json({ message: 'Hola' });
 });
 
 // Middleware de manejo de errores
