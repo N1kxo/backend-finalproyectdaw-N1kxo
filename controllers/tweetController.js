@@ -1,5 +1,6 @@
 const Tweet = require('../models/Tweet');
 const User = require('../models/UserModel');
+const Notification = require('../models/Notification');
 
 // Controladores para las rutas de tweets
 const tweetController = {
@@ -97,6 +98,14 @@ const tweetController = {
       if (!tweet.likes.includes(req.user._id)) {
         tweet.likes.push(req.user._id);
         await tweet.save();
+
+        // Create notification
+        const notification = new Notification({
+          user: tweet.author,
+          type: 'like',
+          message: `${req.user.username} liked your tweet!!!`
+        });
+        await notification.save();
       }
 
       res.status(200).json(tweet);
@@ -123,10 +132,49 @@ const tweetController = {
       });
 
       const newRepost = await repost.save();
+
+      // Create notification
+      const notification = new Notification({
+        user: tweet.author,
+        type: 'repost',
+        message: `${req.user.username} reposted your tweet!!!`
+      });
+      await notification.save();
+
       res.status(201).json(newRepost);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Error al repostear tweet' });
+    }
+  },
+
+  getNotifications: async (req, res) => {
+    try {
+      const notifications = await Notification.find({ user: req.user._id }).populate('user', 'username');
+      const formattedNotifications = notifications.map(notification => ({
+        username: notification.user.username,
+        type: notification.type,
+        message: notification.message,
+      }));
+      res.status(200).json(formattedNotifications);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al obtener notificaciones' });
+    }
+  },
+
+  searchTweets: async (req, res) => {
+    const { query } = req.params;
+    try {
+      // Buscar tweets que contengan la palabra clave o hashtag en el contenido
+      const tweets = await Tweet.find({
+        content: { $regex: query, $options: 'i' } // $regex para coincidencia parcial, 'i' para case-insensitive
+      }).populate('author', 'username');
+      
+      res.status(200).json(tweets);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al buscar tweets' });
     }
   }
 };

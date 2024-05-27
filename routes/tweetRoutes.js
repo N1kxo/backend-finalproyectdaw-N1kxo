@@ -9,5 +9,7 @@ router.put('/:id', protect, tweetController.editTweet);
 router.delete('/:id', protect, tweetController.deleteTweet);
 router.post('/:id/like', protect, tweetController.likeTweet);
 router.post('/:id/repost', protect, tweetController.repostTweet);
+router.get('/notifications', protect, tweetController.getNotifications);
+router.get('/search/:query', tweetController.searchTweets);
 
 module.exports = router;
